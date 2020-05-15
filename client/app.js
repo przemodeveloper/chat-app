@@ -5,7 +5,13 @@ const addMessageForm = document.getElementById('add-messages-form');
 const userNameInput = document.getElementById('username');
 const messageContentInput = document.getElementById('message-content');
 
+const socket = io();
+
 let userName = '';
+
+socket.on('message', ( { author, content } ) => addMessage(author, content));
+socket.on('join', (user) => addMessage('Chat Bot', user + ' has joined chat!'));
+socket.on('removeUser', (id) => addMessage('Chat Bot', id + ' has left the chat!'));
 
 function login(e) {
     e.preventDefault();
@@ -15,6 +21,7 @@ function login(e) {
         userName = userNameInput.value;
         loginForm.classList.remove('show');
         messagesSection.classList.add('show');
+        socket.emit('join', userName);
     }
 }
 
@@ -39,6 +46,7 @@ function sendMessage(e) {
         alert('Please enter a message.')
     } else {
         addMessage(userName, messageContentInput.value);
+        socket.emit('message', { author: userName, content: messageContentInput.value});
         messageContentInput.value = '';
     }
 }
@@ -49,5 +57,5 @@ loginForm.addEventListener('submit', function(event) {
 
 addMessageForm.addEventListener('submit', function(event) {
     sendMessage(event);
-    
 })
+
